@@ -12,6 +12,7 @@
 
 set(CPACK_BUILD_SOURCE_DIRS "/root/barsik20/workspace/projects/Rk2;/root/barsik20/workspace/projects/Rk2/_build")
 set(CPACK_CMAKE_GENERATOR "Unix Makefiles")
+set(CPACK_COMPONENTS_ALL "applications;gmock;gtest")
 set(CPACK_COMPONENT_UNSPECIFIED_HIDDEN "TRUE")
 set(CPACK_COMPONENT_UNSPECIFIED_REQUIRED "TRUE")
 set(CPACK_DEBIAN_PACKAGE_NAME "libsolver-dev")
