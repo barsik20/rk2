@@ -1,0 +1,72 @@
+name: 1
+on:
+  push:
+    tags: [ "v*" ]
+  workflow_dispatch:
+
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Get repo files
+        uses: actions/checkout@v6
+        with:
+          submodules: true
+      - name: Configure build directory
+        run: cmake -H. -B build -D BUILD_TESTS=ON
+      - name: Build project
+        run: cmake --build build
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v6
+        with:
+          name: Applications
+          path: |
+            ./build/chat_room
+            ./build/check
+
+  test:
+    needs: build
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Download artifacts
+        uses: actions/download-artifact@v6
+        with:
+          name: Applications
+          path: ./apps
+      - name: Fix permissions
+        run: |
+          chmod +x ./apps/chat_room
+          chmod +x ./apps/check
+      - name: run check_room
+        run: ./apps/chat_room
+      - name: GTest 
+        run: ./apps/check
+
+  create-binary-packages:
+    needs: test
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Get repo files
+        uses: actions/checkout@v6
+        with:
+          submodules: true
+      - name: Create packages
+        run: |
+          cmake -H. -B build -DCMAKE_BUILD_TYPE=Release -D BUILD_TEST=ON
+          cmake --build build
+          cd build
+          cpack -G DEB -C Release
+      - name: Upload binary packages
+        uses: softprops/action-gh-release@v1
+        with:
+          files: |
+            build/*.deb
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
